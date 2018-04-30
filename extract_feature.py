@@ -1,50 +1,49 @@
 import re
 
-# count the link in an email
-# input: the email title
-# output: the number of link
+# Count the link in an email
+# Input: title of an txt file
+# Output: the number of link
 def count_link(title):
-	count = 0
+	regex = 'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+'
 	with open(title) as fh:
-		for line in fh:
-			match = re.search('<a +href="(.+?)" *>', line)
-			if (match != None):
-				count += 1
-	return count
+		content = fh.read()
+		matches = re.findall(regex, content)
+		#print(matches)
+	return len(matches)
+	
 
-# count the image in an email
-# input: the email title
-# output: the number of image
+# Count the image in an email
 def count_image(title):
-	count = 0
-	with open(title) as html:
-		content = html.read()
-		matches = re.findall(r'\ssrc="([^"]+)"', content)
-		count += len(matches)
-	return count
-
-
-# count the number in an email
-# input: the email content
-# output: the number of number
-def count_number(content):
-	count = 0
+	regex = r'\ssrc="([^"]+)"'
 	with open(title) as fh:
-		for line in fh:
-			line.split(" ")
-			for word in line:
-				if is_int(word):
-					count += 1
-	return count
+		content = fh.read()
+		matches = re.findall(regex, content)
+		#print(matches)
+	return len(matches)
 
-def is_int(word):
-	try: 
-		int(word)
-		return True
-	except ValueError:
-		return False
+# Count the number in an email
+def count_number(title):
+	with open(title) as fh:
+		content = fh.read()
+		matches = [s for s in content.split() if s.isnumeric()]
+		#print(matches)
+	return len(matches)
 
 
-title = "easy_ham/0001.ea7e79d3153e7469e7a9c3e0af6a357e"
-print(count_number(title))
+# Count the number of phone number
+def count_phone(title):
+	regex = r'(\d{3})\D*(\d{3})\D*(\d{4})\D*(\d*)$'
+	with open(title) as fh:
+		content = fh.read()
+		matches = re.findall(regex, content)
+		#print(matches)
+	return len(matches)
+
+
+# Test case
+title = "easy_ham/0009.435ae292d75abb1ca492dcc2d5cf1570"
+print(count_link(title))
 print(count_image(title))
+print(count_number(title))
+print(count_phone(title))
+
