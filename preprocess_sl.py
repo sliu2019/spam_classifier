@@ -7,6 +7,7 @@ import numpy as np
 import re
 import string
 from nltk.corpus import stopwords
+#from stanfordcorenlp import StanfordCoreNLP
 
 def count_all_caps_words(text):
 	# Returns frequency of all caps words, not COUNT, as the function name says
@@ -36,6 +37,7 @@ def extract_features(path):
 		Of course, the path is relative to the location of this file. 
 		It currently cannot navigate into subdirectories, so you may need to call several times for several folders.  
 	"""
+	#nlp = StanfordCoreNLP(r'\stanford-english-corenlp-2017-06-09-models')
 	tknzr = TweetTokenizer()
 	stop_words = set(stopwords.words('english'))
 
@@ -84,7 +86,7 @@ def extract_features(path):
 
 		
 
-	#Later, return the matrix of features
+	# TO DO: return features in matrix form, write this to a file
 	return None
 
 def main():
