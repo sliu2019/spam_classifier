@@ -13,27 +13,28 @@ from nltk.stem import WordNetLemmatizer
 #from stanfordcorenlp import StanfordCoreNLP
 
 def count_all_caps_words(text):
-	# Returns frequency of all caps words, not COUNT, as the function name says
-	# Observation: technical ham emails can have a lot of acronyms. Also, some HTML makes things caps, but this can't detect it.  
-	return sum(token.isupper() for token in text) / len(text)
+    # Returns frequency of all caps words, not COUNT, as the function name says
+    # Observation: technical ham emails can have a lot of acronyms. Also, some HTML makes things caps, but this can't detect it.
+    return sum(token.isupper() for token in text) / len(text)
 
 def find_avg_word_length(text):
-	# Assumes input text is tokenized, and a list
-	# Sum is implemented in C, and fast
-	return sum(len(token) for token in text) / len(text)
+    # Assumes input text is tokenized, and a list
+    # Sum is implemented in C, and fast
+    return sum(len(token) for token in text) / len(text)
 
 def count_numbered_lists(text):
-	# Runs on raw text
+    # Runs on raw text
 
-	count = 0
-	# Matches "1." and "1)" type numbering
-	matches = re.findall(r'(?:\d+(?:\.|\))\s.*\n?)+', text) #returns a list of strings
-	for match in matches:
-		if match[0] == "1":
-			count += 1
-			#print(match)
-	return count
+    count = 0
+    # Matches "1." and "1)" type numbering
+    matches = re.findall(r'(?:\d+(?:\.|\))\s.*\n?)+', text) #returns a list of strings
+    for match in matches:
+        if match[0] == "1":
+            count += 1
+            #print(match)
+    return count
 
+<<<<<<< HEAD
 def extract_features(path):
 	""" The main function which reads all training data, and extracts all features, then writes them (in matrix form) to an output file.
 		To use, make sure to pass it the path of the directory containing the text files. 
@@ -111,3 +112,5 @@ def main():
 
 if __name__ == '__main__':
 	main()
+=======
+>>>>>>> 10cabc49a91f630d1e0ee2c920faf7451c35d181

@@ -38,93 +38,63 @@ def CCA(X, Y, k):
 
 	return X_hat, Y_hat
 
-def QDA(X_train, Y_train, X_test):
-	""" Discriminative classification method: takes in training data with labels and test data, and outputs Y_hat corr. to X_test """
-	d = X_train.shape[1]
+def main():
+    ##Simin
+    word_sophistication = False
+    cap_word_count = False
+    extra_cap = False
+    list_count = False
 
-	class_ids, counts = np.unique(Y_train, return_counts = True)
-	class_means = {}
-	class_covs = {}
-	class_priors = {}
+    ##Chris
+    misspelled_word = False
+    longest_conseq_cap = False
+    HTML_check = False
+    style_check = False
 
-	for i in range(class_ids.size):
-		class_id = class_ids[i]
+    ##Wiliam
+    image_count = False
+    link_count = False
+    number_count = False
 
-		class_data = X_train[Y_train == class_id]
-		class_mean = np.reshape(np.mean(class_data, axis=0), (1, d))
-		class_cov = (1.0/class_data.shape[0])*(X_train - class_mean).T @ (X_train - class_mean)
+    ##Patrick
+    count_non_English = False
+    word_count = False
+    longest_conseq_char = False
+    character_count = False
 
-		class_means[class_id] = class_mean
-		class_covs[class_id] = class_cov
-		class_priors[class_id] = counts[i]/np.sum(counts)
+    output = []
+    if word_sophistication:
+        pass
+    if cap_word_count:
+        pass
+    if extra_cap:
+        pass
+    if list_count:
+        pass
+    if misspelled_word:
+        pass
+    if longest_conseq_cap:
+        pass
+    if HTML_check:
+        pass
+    is style_check:
+        pass
+    if image_count:
+        pass
+    if link_count:
+        pass
+    if number_count:
+        pass
+    if count_non_English:
+        pass
+    if word_count:
+        pass
+    if longest_conseq_char:
+        pass
+    if character_count:
+        pass
+    output_array = np.arrays(output)
 
-	n_test = X_test.shape[0]
-	Y_hat = np.zeros(n_test)
+if __name__ = '__main__':
+    main()
 
-	for i in range(n_test):
-		best_class_id = None
-		best_class_value = float('-inf')
-		for class_id in class_ids: 
-			sigma = class_covs[class_id]
-			mu = class_means[class_id]
-			prior = class_priors[class_id]
-
-			x_i = X_test[i, :]
-			value = -1.0/2*log(np.linalg.det(sigma)) - 1.0/2*(x_i - mu).T @ np.linalg.inv(sigma) @ (x_i - mu) + log(prior)
-
-			if value > best_class_value:
-				best_class_value = value
-				best_class_id = class_id
-
-		Y_hat[i] = class_id
-
-	return Y_hat
-
-def LDA(X_train, Y_train, X_test):
-	""" Discriminative classification method: takes in training data with labels and test data, and outputs Y_hat corr. to X_test """
-	d = X_train.shape[1]
-
-	class_ids, counts = np.unique(Y_train, return_counts = True)
-	class_means = {}
-	#class_covs = {}
-	class_priors = {}
-
-	cov = np.zeros((d, d))
-	for i in range(class_ids.size):
-		class_id = class_ids[i]
-
-		class_data = X_train[Y_train == class_id]
-		class_mean = np.reshape(np.mean(class_data, axis=0), (1, d))
-		class_cov = (1.0/class_data.shape[0])*(X_train - class_mean).T @ (X_train - class_mean)
-
-		class_means[class_id] = class_mean
-		#class_covs[class_id] = class_cov
-
-		class_priors[class_id] = counts[i]/np.sum(counts)
-		cov = cov + class_cov*class_priors[class_id]
-
-
-	n_test = X_test.shape[0]
-	Y_hat = np.zeros(n_test)
-
-	for i in range(n_test):
-		best_class_id = None
-		best_class_value = float('-inf')
-		for class_id in class_ids: 
-			mu = class_means[class_id]
-			prior = class_priors[class_id]
-
-			x_i = X_test[i, :]
-			value = -1.0/2*log(np.linalg.det(cov)) - 1.0/2*(x_i - mu).T @ np.linalg.inv(cov) @ (x_i - mu) + log(prior)
-
-			if value > best_class_value:
-				best_class_value = value
-				best_class_id = class_id
-
-		Y_hat[i] = class_id
-
-	return Y_hat
-
-def test_QDA():
-	"""Creates some random matrices to test on"""
-	return None
