@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.linalg as LA
 from math import log
+import matplotlib.pyplot as plt
 
 def PCA(X, k):
 	""" Returns X_hat, which is the nxk approximation of X"""
@@ -21,10 +22,13 @@ def CCA(X, Y, k):
 	V_k = np.vstack((np.eye(k), np.zeros((p-k, k))))
 
 	u, s, vt = np.linalg.svd(X.T @ X) #EVD
-	W_x = u @ LA.sqrtm(s) @ u.T
+	# print(X.T @ X)
+	# print(np.diag(s))
+
+	W_x = u @ LA.sqrtm(np.diag(s)) @ u.T
 
 	u, s, vt = np.linalg.svd(Y.T @ Y) #EVD
-	W_y = u @ LA.sqrtm(s) @ u.T
+	W_y = u @ LA.sqrtm(np.diag(s)) @ u.T
 
 	u, s, vt = np.linalg.svd(W_x.T @ X.T @ Y @ W_y)
 	D_x = u
@@ -38,63 +42,79 @@ def CCA(X, Y, k):
 
 	return X_hat, Y_hat
 
+def PCA_visualize(X):
+	# Visualizes PCA in 2D with scatterplot
+	X_hat = PCA(X, k=2)
+	plt.scatter(X_hat[:,0], X_hat[:,1])
+	plt.show()
+
+def CCA_visualize(X, Y):
+	# Visualizes CCA in 2D with scatterplot
+	X_hat, Y_hat = CCA(X, Y, k=2)
+	plt.scatter(X_hat[:,0], X_hat[:,1], c = "xkcd:magenta")
+	plt.scatter(Y_hat[:,0], Y_hat[:,1], c = "xkcd:teal")
+	plt.show()
+
 def main():
-    ##Simin
-    word_sophistication = False
-    cap_word_count = False
-    extra_cap = False
-    list_count = False
+	#PCA_visualize(np.random.rand(20, 5)*10)
+	#CCA_visualize(np.random.rand(20, 5)*10, np.random.rand(20, 3)*5)
 
-    ##Chris
-    misspelled_word = False
-    longest_conseq_cap = False
-    HTML_check = False
-    style_check = False
+	##Simin
+	word_sophistication = False
+	cap_word_count = False
+	extra_cap = False
+	list_count = False
 
-    ##Wiliam
-    image_count = False
-    link_count = False
-    number_count = False
+	##Chris
+	misspelled_word = False
+	longest_conseq_cap = False
+	HTML_check = False
+	style_check = False
 
-    ##Patrick
-    count_non_English = False
-    word_count = False
-    longest_conseq_char = False
-    character_count = False
+	##Wiliam
+	image_count = False
+	link_count = False
+	number_count = False
 
-    output = []
-    if word_sophistication:
-        pass
-    if cap_word_count:
-        pass
-    if extra_cap:
-        pass
-    if list_count:
-        pass
-    if misspelled_word:
-        pass
-    if longest_conseq_cap:
-        pass
-    if HTML_check:
-        pass
-    is style_check:
-        pass
-    if image_count:
-        pass
-    if link_count:
-        pass
-    if number_count:
-        pass
-    if count_non_English:
-        pass
-    if word_count:
-        pass
-    if longest_conseq_char:
-        pass
-    if character_count:
-        pass
-    output_array = np.arrays(output)
+	##Patrick
+	count_non_English = False
+	word_count = False
+	longest_conseq_char = False
+	character_count = False
 
-if __name__ = '__main__':
-    main()
+	output = []
+	if word_sophistication:
+		pass
+	if cap_word_count:
+		pass
+	if extra_cap:
+		pass
+	if list_count:
+		pass
+	if misspelled_word:
+		pass
+	if longest_conseq_cap:
+		pass
+	if HTML_check:
+		pass
+	if style_check:
+		pass
+	if image_count:
+		pass
+	if link_count:
+		pass
+	if number_count:
+		pass
+	if count_non_English:
+		pass
+	if word_count:
+		pass
+	if longest_conseq_char:
+		pass
+	if character_count:
+		pass
+	output_array = np.array(output)
+
+if __name__ == '__main__':
+	main()
 

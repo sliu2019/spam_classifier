@@ -4,7 +4,7 @@ from math import log
 class QDA(object):
 
 	def __init__(self):
-		self.mu = 0.0001 #padding for log
+		self.mu = 0.00001 #padding for log
 
 	def train(self, X_train, Y_train):
 	#Train the classifier. Compute the empirical covariances and means for each class, and the class priors. 
@@ -25,7 +25,7 @@ class QDA(object):
 			class_mean = np.reshape(np.mean(class_data, axis=0), (1, d))
 			#print(class_data)
 			#print(class_mean.shape)
-			class_cov = (1.0/class_data.shape[0])*(X_train - class_mean).T @ (X_train - class_mean)
+			class_cov = (1.0/class_data.shape[0])*(class_data - class_mean).T @ (class_data - class_mean)
 			# print(np.all(np.linalg.eigvals(class_cov) >= 0))
 			# print(np.linalg.eigvals(class_cov))
 			self.class_means[class_id] = class_mean
@@ -48,29 +48,24 @@ class QDA(object):
 				prior = self.class_priors[class_id]
 
 				x_i = np.reshape(X_test[i, :], (d, 1))
-				# print(x_i.shape)
-				# print(prior)
-				# print(np.linalg.det(sigma))
-				# print(log(np.linalg.det(sigma)))
 				value = -1.0/2*log(np.linalg.det(sigma) + self.mu) - 1.0/2*(x_i - mu.T).T @ np.linalg.inv(sigma) @ (x_i - mu.T) + log(prior)
 
 				if value > best_class_value:
 					best_class_value = value
 					best_class_id = class_id
-
-			Y_hat[i] = class_id
+			Y_hat[i] = best_class_id
 
 		return Y_hat
 
 def main():
 	qda_classifier = QDA()
 
-	X_train = np.random.rand(20, 30)
+	X_train = np.random.rand(20, 30)*10
 	y_train = np.random.randint(0, 2, (20, 1))
-	X_test = np.random.rand(20, 30)
+	X_test = np.random.rand(10, 30)*10
 
-	qda_classifier.train(X_train, y_train)
-	y_hat = qda_classifier.predict(X_test)
+	# qda_classifier.train(X_train, y_train)
+	# y_hat = qda_classifier.predict(X_test)
 
 if __name__ == "__main__":
 	main()
