@@ -1,12 +1,15 @@
 import pandas as pd 
 import nltk as nltk
-from nltk import RegexpTokenizer
-from nltk import TweetTokenizer
+#from nltk import RegexpTokenizer
+#from nltk import TweetTokenizer
+from nltk import tokenize
 import os
 import numpy as np 
 import re
 import string
 from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import TfidfVectorizer
+from nltk.stem import WordNetLemmatizer
 #from stanfordcorenlp import StanfordCoreNLP
 
 def count_all_caps_words(text):
@@ -38,9 +41,12 @@ def extract_features(path):
 		It currently cannot navigate into subdirectories, so you may need to call several times for several folders.  
 	"""
 	#nlp = StanfordCoreNLP(r'\stanford-english-corenlp-2017-06-09-models')
-	tknzr = TweetTokenizer()
+	#tknzr = TweetTokenizer(reduce_len=False)
+	lmtzr = WordNetLemmatizer()
 	stop_words = set(stopwords.words('english'))
 
+
+	count = 0
 	for filename in os.listdir(path):
 		file = open(path + "/" + filename, "r")
 
@@ -57,29 +63,37 @@ def extract_features(path):
 				email_content = file.read() 
 				break
 
-		content_tknzd = tknzr.tokenize(email_content)
-		subject_tknzd = tknzr.tokenize(email_subject)
+		content_tknzd = tokenize.word_tokenize(email_content)
+		subject_tknzd = tokenize.word_tokenize(email_subject)
 
-		content_depunct = list(filter(lambda token: token not in string.punctuation, content_tknzd))
-
+		#content_depunct = list(filter(lambda token: token not in string.punctuation, content_tknzd))
+		print(content_tknzd)
 		# De-punkt, stopwords removed, alphabetical words only 
-		content_cleaned = list(filter(lambda token: token not in stop_words, content_depunct))
-		content_cleaned = [token for token in content_cleaned if token.isalpha()]
+		content_cleaned = list(filter(lambda token: token not in stop_words, content_tknzd))
+		#content_cleaned = [token for token in content_cleaned if token.isalpha()]
+		content_cleaned = [token for token in content_cleaned if token.isalpha() or token in string.punctuation]
+		print(string.punctuation)
 
 		content_cleaned_lower = [token.lower() for token in content_cleaned]
+		content_cleaned_lemmatized = [lmtzr.lemmatize(token) for token in content_cleaned_lower]
 		print(">>>>>>>>>>>>>>>>>>>>>", filename, ">>>>>>>>>>>>>>>>>>>>")
-		#print(content_depunct)
+		#print(content_cleaned_lemmatized)
+
+		write_string = " ".join(content_cleaned_lemmatized)
 		
 		# Call your helper functions here! Use the raw, depunct, or cleaned content/subject. 
-		avg_word_len = find_avg_word_length(content_cleaned_lower)
-		freq_all_caps_words = count_all_caps_words(content_cleaned)
-		num_numbered_lists = count_numbered_lists(email_content)
-		print(avg_word_len)
-		print(freq_all_caps_words)
-		print(num_numbered_lists)
-
+		# avg_word_len = find_avg_word_length(content_cleaned_lower)
+		# freq_all_caps_words = count_all_caps_words(content_cleaned)
+		# num_numbered_lists = count_numbered_lists(email_content)
+		# print(avg_word_len)
+		# print(freq_all_caps_words)
+		# print(num_numbered_lists)
 		file.close()
 
+		write_file = open("easy_ham_" + str(count) + ".txt", "w")
+		write_file.write(write_string)
+
+		count += 1
 		
 		
 		# Do we need to consider case where email_content is empty? 
