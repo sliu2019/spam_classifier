@@ -13,9 +13,9 @@ baseline = False
 linear_rg = False
 naive_bay = False
 nn = False 
-svm = False
-QDA = False
-LDA = False
+svm = True
+QDA = True
+LDA = True
 logistic_reg = True
 decision_tr = False 
 kNN = False
@@ -44,8 +44,8 @@ def dimension_search(classifier, dr_method, X_training, y_training, X_test, y_te
         X_training_hat = X_training @ U
         X_test_hat = X_test @ U 
         classifier.train(X_training_hat, y_training)
-        pred_train = classifier.predict(X_training_hat)
-        pred_test = classifier.predict(X_test_hat)
+        pred_train = classifier.predict(X_training_hat).reshape(-1, 1)
+        pred_test = classifier.predict(X_test_hat).reshape(-1, 1)
         ks.append(k)
         training_accuracies.append(1 - np.sum(np.absolute(y_training - pred_train))/X_training.shape[0])
         test_accuracies.append(1 - np.sum(np.absolute(y_test - pred_test))/X_test.shape[0])
@@ -75,13 +75,13 @@ def main():
 
     # Change these variables to select which dimensionality reduction method to use, 
     # and the number of dimension k to reduce to.
-    PCA_flag = False
+    PCA_flag = True
     CCA_flag = False
     Random_flag = False
-    k = 2 
+    k = 31
 
     if PCA_flag:
-        V_k = PCA_Projector(X_training, k)
+        V_k = PCA_Projector(X_training, y_training, k)
         X_training = X_training @ V_k
         X_test = X_test @ V_k
     elif CCA_flag:
@@ -89,7 +89,7 @@ def main():
         X_training = X_training @ U
         X_test = X_test @ U
     elif Random_flag:
-        U = Random_Projector(X_training, k)
+        U = Random_Projector(X_training, y_training, k)
         X_training = X_training @ U 
         X_test = X_test @ U 
     if baseline:
@@ -177,7 +177,7 @@ def run_all_dimensionality_test():
     with np.load("email_vector_test.npz") as testData:
         X_test = testData["arr_0"]
         y_test = testData["arr_1"]
-    names = ["LS_SVM", "SVM", "QDA", "LDA", "logistic_reg"]
+    names = ["QDA"]
     for name in names:
         if name == "LS_SVM":
             classifier = LS_SVM()
@@ -193,6 +193,7 @@ def run_all_dimensionality_test():
         for dr_method in ["PCA", "CCA", "Random"]:
             print(dr_method)
             print("Best k is:")
-            print(dimension_search(classifier, dr_method, X_training, y_training, X_test, y_test, min_k = 1, max_k = 600, interval = 30, save = True, name = name))
+            print(dimension_search(classifier, dr_method, X_training, y_training, X_test, y_test, min_k = 1, max_k = 601, interval = 30, save = True, name = name))
 if __name__ == '__main__':
     run_all_dimensionality_test()
+    # main()
