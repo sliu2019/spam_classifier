@@ -5,17 +5,18 @@ from svm import *
 from qda import *
 from lda import *
 from k_nearest_neighbor import *
+from util import * 
 # Change these variables to indicate which methods to use 
 baseline = False
-linear_rg = False
+linear_rg = True
 naive_bay = False
 nn = False 
 svm = False
 QDA = False
 LDA = False
-logistic_reg = False
+logistic_reg = True
 decision_tr = False 
-kNN = True
+kNN = False
 
 def main():
     # X is an n x d matrix, where n is the number of samples and d is the number of features.
@@ -28,13 +29,23 @@ def main():
     with np.load("email_vector_test.npz") as testData:
         X_test = testData["arr_0"]
         y_test = testData["arr_1"]
-            
-    PCA_flag = True
+
+    # Change these variables to select which dimensionality reduction method to use, 
+    # and the number of dimension k to reduce to.
+    PCA_flag = False
     CCA_flag = False
+    k = 2
 
     if PCA_flag and CCA_flag:
         raise ValueErrror("Please only use one of the two dimensionality reduction methods")
-
+    if PCA_flag:
+        V_k = PCA_Projector(X_training, k)
+        X_training = X_training @ V_k
+        X_test = X_test @ V_k
+    if CCA_flag:
+        U= CCA_Projector(X_training, y_training, k)
+        X_training = X_training @ U
+        X_test = X_test @ U
     #Should probably set PCA and CCA inside each block.
     if baseline:
         print(">>>>>>>>>>>" + "Baseline" + ">>>>>>>>>>>")
@@ -63,7 +74,7 @@ def main():
         print("Test Error is " + str(np.linalg.norm(y_test - pred_test)**2/X_test.shape[0]))
         print("Test accuracy is " + str(1 - np.sum(np.absolute(y_test - pred_test))/X_test.shape[0]))
     if linear_rg:
-        print(">>>>>>>>>>>" + "Linear Regression" + ">>>>>>>>>>>")
+        print(">>>>>>>>>>>" + "LS-SVM" + ">>>>>>>>>>>")
         w = linear_regression(X_training, y_training)
         print("Training error is " + str(np.linalg.norm(y_training - (X_training@w + 1)/2)**2/X_training.shape[0]))
         pred_test = X_test @ w
@@ -78,7 +89,6 @@ def main():
             nb = Naive_Bayes_Classifier()
             nb.train(X_training, y_training)
             pred_train = nb.predict(X_training)
-            print(pred_train)
             print("Training error is " + str(np.linalg.norm(y_training - pred_train)**2/X_training.shape[0]))
             pred_test = nb.predict(X_test)
             print("Test Error is " + str(np.linalg.norm(y_test - pred_test)**2/X_test.shape[0]))

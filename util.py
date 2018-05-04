@@ -11,20 +11,26 @@ def PCA(X, k):
     X_hat = X @ V_k
     return X_hat
 
+def PCA_Projector(X, k):
+    """ Returns V_k, which is top k principal components of X"""
+    u, s, vt = np.linalg.svd(X)
+
+    V_k = (vt[:k, :]).T
+    return V_k
 def CCA(X, Y, k):
     """ Returns X_hat, Y_hat, which are nxk """
     #Assumes  k < d, k < p 
     d = X.shape[1]
     p = Y.shape[1]
 
-	# U_k is d x k, V_k is p x k
-	U_k = np.vstack((np.eye(k), np.zeros((d-k, k))))
-	if p > k:
-		V_k = np.vstack((np.eye(k), np.zeros((p-k, k))))
-	if p == k: 
-		V_k = np.eye(k)
-	if p < k:
-		V_k = np.hstack((np.eye(p), np.zeros((p, k-p))))
+    # U_k is d x k, V_k is p x k
+    U_k = np.vstack((np.eye(k), np.zeros((d-k, k))))
+    if p > k:
+        V_k = np.vstack((np.eye(k), np.zeros((p-k, k))))
+    if p == k: 
+        V_k = np.eye(k)
+    if p < k:
+        V_k = np.hstack((np.eye(p), np.zeros((p, k-p))))
 
     u, s, vt = np.linalg.svd(X.T @ X) #EVD
     # print(X.T @ X)
@@ -46,6 +52,37 @@ def CCA(X, Y, k):
     Y_hat = Y @ V
 
     return X_hat, Y_hat
+
+def CCA_Projector(X, Y, k):
+    d = X.shape[1]
+    p = Y.shape[1]
+
+    # U_k is d x k, V_k is p x k
+    U_k = np.vstack((np.eye(k), np.zeros((d-k, k))))
+    if p > k:
+        V_k = np.vstack((np.eye(k), np.zeros((p-k, k))))
+    if p == k: 
+        V_k = np.eye(k)
+    if p < k:
+        V_k = np.hstack((np.eye(p), np.zeros((p, k-p))))
+
+    u, s, vt = np.linalg.svd(X.T @ X) #EVD
+    # print(X.T @ X)
+    # print(np.diag(s))
+
+    W_x = u @ LA.sqrtm(np.diag(s)) @ u.T
+
+    u, s, vt = np.linalg.svd(Y.T @ Y) #EVD
+    W_y = u @ LA.sqrtm(np.diag(s)) @ u.T
+
+    u, s, vt = np.linalg.svd(W_x.T @ X.T @ Y @ W_y)
+    D_x = u
+    D_y = vt.T
+
+    U = W_x @ D_x @ U_k
+    V = W_y @ D_y @ V_k
+
+    return U 
 
 def PCA_visualize(X, y):
     # Visualizes PCA in 2D with scatterplot
