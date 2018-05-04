@@ -19,7 +19,12 @@ def CCA(X, Y, k):
 
 	# U_k is d x k, V_k is p x k
 	U_k = np.vstack((np.eye(k), np.zeros((d-k, k))))
-	V_k = np.vstack((np.eye(k), np.zeros((p-k, k))))
+	if p > k:
+		V_k = np.vstack((np.eye(k), np.zeros((p-k, k))))
+	if p == k: 
+		V_k = np.eye(k)
+	if p < k:
+		V_k = np.hstack((np.eye(p), np.zeros((p, k-p))))
 
 	u, s, vt = np.linalg.svd(X.T @ X) #EVD
 	# print(X.T @ X)
@@ -57,7 +62,14 @@ def CCA_visualize(X, Y):
 
 def main():
 	#PCA_visualize(np.random.rand(20, 5)*10)
-	#CCA_visualize(np.random.rand(20, 5)*10, np.random.rand(20, 3)*5)
+	#CCA_visualize(np.random.rand(20, 5)*10, np.random.rand(20, 1)*5)
+	# spam = np.load('spam.npz')
+	# files = spam.files
+
+	# for file in files:
+	# 	print(type(file))
+	# print(type(spam_data))
+	# print(spam_data.files)
 
 	##Simin
 	word_sophistication = False
