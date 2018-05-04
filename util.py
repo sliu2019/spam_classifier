@@ -11,7 +11,7 @@ def PCA(X, k):
     X_hat = X @ V_k
     return X_hat
 
-def PCA_Projector(X, k):
+def PCA_Projector(X, y, k):
     """ Returns V_k, which is top k principal components of X"""
     u, s, vt = np.linalg.svd(X)
 
@@ -88,14 +88,30 @@ def PCA_visualize(X, y):
     # Visualizes PCA in 2D with scatterplot
     X_hat = PCA(X, k=2)
     plt.scatter(X_hat[:,0], X_hat[:,1], c = y.reshape(-1))
+    plt.title("PCA Projection")
+    plt.savefig("PCA_projection.jpg")
     plt.show()
 
 def CCA_visualize(X, Y):
     # Visualizes CCA in 2D with scatterplot
     X_hat, Y_hat = CCA(X, Y, k=2)
-    plt.scatter(X_hat[:,0], X_hat[:,1], c = "xkcd:magenta")
-    plt.scatter(Y_hat[:,0], Y_hat[:,1], c = "xkcd:teal")
+    plt.scatter(X_hat[:,0], X_hat[:,1], c = Y.reshape(-1))
+    # plt.scatter(Y_hat[:,0], Y_hat[:,1], c = "xkcd:teal")
+    plt.title("CCA Projection")
+    plt.savefig("CCA_projection.jpg")
     plt.show()
+
+def Random_visualize(X, y):
+	U = Random_Projector(X, 2)
+	X_hat = X@U
+	plt.scatter(X_hat[:,0], X_hat[:,1], c = y.reshape(-1))
+	# plt.legend()
+	plt.title("Random Projection")
+	plt.savefig("random_projection.jpg")
+	plt.show()
+
+def Random_Projector(X, y, k):
+	return np.random.randn(X.shape[1],k)
 
 def main():
     #PCA_visualize(np.random.rand(20, 5)*10)
@@ -105,8 +121,9 @@ def main():
         X = data['arr_0']
         y = data['arr_1']
     print(X.shape)
-    PCA_visualize(X, y)
-    CCA_visualize(X, y)
+    # PCA_visualize(X, y)
+    # CCA_visualize(X, y)
+    Random_visualize(X, y)
     ##Simin
     # word_sophistication = False
     # cap_word_count = False
