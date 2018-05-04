@@ -4,7 +4,7 @@ from math import log
 class LDA_Classifier(object):
 
 	def __init__(self):
-		self.mu = 0.00001 #padding for log
+		self.epsilon = 0.00001 #padding for log
 
 	def train(self, X_train, Y_train):
 
@@ -35,31 +35,14 @@ class LDA_Classifier(object):
 
 		n_test = X_test.shape[0]
 		d = X_test.shape[1]
-		#Y_hat = np.zeros(n_test)
-
-		# for i in range(n_test):
-		# 	best_class_id = None
-		# 	best_class_value = float('-inf')
-		# 	for class_id in self.class_ids: 
-		# 		mu = self.class_means[class_id]
-		# 		prior = self.class_priors[class_id]
-
-		# 		x_i = np.reshape(X_test[i, :], (d, 1))
-		# 		value = - 1.0/2*(x_i - mu.T).T @ np.linalg.inv(self.cov) @ (x_i - mu.T) + log(prior)
-
-		# 		if value > best_class_value:
-		# 			best_class_value = value
-		# 			best_class_id = class_id
-
-		# 	Y_hat[i] = best_class_id
 
 		scores = np.empty((n_test, 1))
 		for i in range(self.class_ids.size):
 			class_id = self.class_ids[i]
 			mu = self.class_means[class_id]
 			prior = self.class_priors[class_id]
-			
-			score = (-1.0/2)*np.diag((X_test - mu) @ np.linalg.inv(self.cov) @ (X_test -  mu).T) + log(prior)
+
+			score = (-1.0/2)*np.diag((X_test - mu) @ np.linalg.inv(self.cov + np.eye(self.cov.shape[0])*self.epsilon) @ (X_test -  mu).T) + log(prior)
 			score = np.reshape(score, (n_test, 1))
 
 			if i == 0:
@@ -71,11 +54,12 @@ class LDA_Classifier(object):
 		return Y_hat
 
 def main():
-	lda_classifier = LDA_Classifier()
+	pass
+	# lda_classifier = LDA_Classifier()
 
-	X_train = np.random.rand(20, 30)*10
-	y_train = np.random.randint(0, 2, (20, 1))
-	X_test = np.random.rand(10, 30)*10
+	# X_train = np.random.rand(20, 30)*10
+	# y_train = np.random.randint(0, 2, (20, 1))
+	# X_test = np.random.rand(10, 30)*10
 
 	# lda_classifier.train(X_train, y_train)
 	# y_hat = lda_classifier.predict(X_test)
