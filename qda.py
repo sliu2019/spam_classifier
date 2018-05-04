@@ -1,7 +1,7 @@
 import numpy as np
 from math import log
 
-class QDA(object):
+class QDA_Classifier(object):
 
 	def __init__(self):
 		self.mu = 0.00001 #padding for log
@@ -48,7 +48,7 @@ class QDA(object):
 				prior = self.class_priors[class_id]
 
 				x_i = np.reshape(X_test[i, :], (d, 1))
-				value = -1.0/2*log(np.linalg.det(sigma) + self.mu) - 1.0/2*(x_i - mu.T).T @ np.linalg.inv(sigma) @ (x_i - mu.T) + log(prior)
+				value = -1.0/2*log(np.linalg.det(sigma) + self.mu) - 1.0/2*(x_i - mu.T).T @ np.linalg.inv(sigma + 0.0001* np.identity(d)) @ (x_i - mu.T) + log(prior)
 
 				if value > best_class_value:
 					best_class_value = value

@@ -1,7 +1,7 @@
 import numpy as np
 from math import log
 
-class LDA(object):
+class LDA_Classifier(object):
 
 	def __init__(self):
 		self.mu = 0.00001 #padding for log
@@ -24,7 +24,7 @@ class LDA(object):
 			class_data = X_train[Y_train == class_id, :]
 			class_mean = np.reshape(np.mean(class_data, axis=0), (1, d))
 			class_cov = (1.0/class_data.shape[0])*(class_data - class_mean).T @ (class_data - class_mean)
-
+			print(class_cov)
 			self.class_means[class_id] = class_mean
 			self.class_priors[class_id] = counts[i]/np.sum(counts)
 			self.cov = self.cov + class_cov*self.class_priors[class_id]
