@@ -37,28 +37,45 @@ class QDA_Classifier(object):
 	# Predict labels for test data using this classifier.
 		n_test = X_test.shape[0]
 		d = X_test.shape[1]
-		Y_hat = np.zeros(n_test)
+		# Y_hat = np.zeros(n_test)
 
-		for i in range(n_test):
-			best_class_id = None
-			best_class_value = float('-inf')
-			for class_id in self.class_ids: 
-				sigma = self.class_covs[class_id]
-				mu = self.class_means[class_id]
-				prior = self.class_priors[class_id]
+		# for i in range(n_test):
+		# 	best_class_id = None
+		# 	best_class_value = float('-inf')
+		# 	for class_id in self.class_ids: 
+		# 		sigma = self.class_covs[class_id]
+		# 		mu = self.class_means[class_id]
+		# 		prior = self.class_priors[class_id]
 
-				x_i = np.reshape(X_test[i, :], (d, 1))
-				value = -1.0/2*log(np.linalg.det(sigma) + self.mu) - 1.0/2*(x_i - mu.T).T @ np.linalg.inv(sigma + 0.0001* np.identity(d)) @ (x_i - mu.T) + log(prior)
+		# 		x_i = np.reshape(X_test[i, :], (d, 1))
+		# 		value = -1.0/2*log(np.linalg.det(sigma) + self.mu) - 1.0/2*(x_i - mu.T).T @ np.linalg.inv(sigma + 0.0001* np.identity(d)) @ (x_i - mu.T) + log(prior)
 
-				if value > best_class_value:
-					best_class_value = value
-					best_class_id = class_id
-			Y_hat[i] = best_class_id
+		# 		if value > best_class_value:
+		# 			best_class_value = value
+		# 			best_class_id = class_id
+		# 	Y_hat[i] = best_class_id
+
+		scores = np.empty((n_test, 1))
+		for i in range(self.class_ids.size):
+			class_id = self.class_ids[i]
+			mu = self.class_means[class_id]
+			prior = self.class_priors[class_id]
+			sigma = self.class_covs[class_id]
+			
+			score = (-1.0/2)*np.diag((X_test - mu) @ np.linalg.inv(sigma) @ (X_test -  mu).T) + log(prior) - (1.0/2)*log(np.linalg.det(sigma) + self.mu)
+			score = np.reshape(score, (n_test, 1))
+
+			if i == 0:
+				scores = scores + score
+			else:
+				scores = np.hstack((scores, score))
+
+		Y_hat = self.class_ids[np.argmax(scores, axis = 1)]
 
 		return Y_hat
 
 def main():
-	qda_classifier = QDA()
+	qda_classifier = QDA_Classifier()
 
 	X_train = np.random.rand(20, 30)*10
 	y_train = np.random.randint(0, 2, (20, 1))
@@ -66,6 +83,7 @@ def main():
 
 	# qda_classifier.train(X_train, y_train)
 	# y_hat = qda_classifier.predict(X_test)
+	# print(y_hat)
 
 if __name__ == "__main__":
 	main()

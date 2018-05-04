@@ -24,7 +24,7 @@ class LDA_Classifier(object):
 			class_data = X_train[Y_train == class_id, :]
 			class_mean = np.reshape(np.mean(class_data, axis=0), (1, d))
 			class_cov = (1.0/class_data.shape[0])*(class_data - class_mean).T @ (class_data - class_mean)
-			print(class_cov)
+			#print(class_cov)
 			self.class_means[class_id] = class_mean
 			self.class_priors[class_id] = counts[i]/np.sum(counts)
 			self.cov = self.cov + class_cov*self.class_priors[class_id]
@@ -35,28 +35,43 @@ class LDA_Classifier(object):
 
 		n_test = X_test.shape[0]
 		d = X_test.shape[1]
-		Y_hat = np.zeros(n_test)
+		#Y_hat = np.zeros(n_test)
 
-		for i in range(n_test):
-			best_class_id = None
-			best_class_value = float('-inf')
-			for class_id in self.class_ids: 
-				mu = self.class_means[class_id]
-				prior = self.class_priors[class_id]
+		# for i in range(n_test):
+		# 	best_class_id = None
+		# 	best_class_value = float('-inf')
+		# 	for class_id in self.class_ids: 
+		# 		mu = self.class_means[class_id]
+		# 		prior = self.class_priors[class_id]
 
-				x_i = np.reshape(X_test[i, :], (d, 1))
-				value = -1.0/2*log(np.linalg.det(self.cov) + self.mu) - 1.0/2*(x_i - mu.T).T @ np.linalg.inv(self.cov) @ (x_i - mu.T) + log(prior)
+		# 		x_i = np.reshape(X_test[i, :], (d, 1))
+		# 		value = - 1.0/2*(x_i - mu.T).T @ np.linalg.inv(self.cov) @ (x_i - mu.T) + log(prior)
 
-				if value > best_class_value:
-					best_class_value = value
-					best_class_id = class_id
+		# 		if value > best_class_value:
+		# 			best_class_value = value
+		# 			best_class_id = class_id
 
-			Y_hat[i] = best_class_id
+		# 	Y_hat[i] = best_class_id
 
+		scores = np.empty((n_test, 1))
+		for i in range(self.class_ids.size):
+			class_id = self.class_ids[i]
+			mu = self.class_means[class_id]
+			prior = self.class_priors[class_id]
+			
+			score = (-1.0/2)*np.diag((X_test - mu) @ np.linalg.inv(self.cov) @ (X_test -  mu).T) + log(prior)
+			score = np.reshape(score, (n_test, 1))
+
+			if i == 0:
+				scores = scores + score
+			else:
+				scores = np.hstack((scores, score))
+
+		Y_hat = self.class_ids[np.argmax(scores, axis = 1)]
 		return Y_hat
 
 def main():
-	lda_classifier = LDA()
+	lda_classifier = LDA_Classifier()
 
 	X_train = np.random.rand(20, 30)*10
 	y_train = np.random.randint(0, 2, (20, 1))
