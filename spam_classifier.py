@@ -8,7 +8,6 @@ from k_nearest_neighbor import *
 from baseline import *
 from util import * 
 import matplotlib.pyplot as plt
-import time
 # Change these variables to indicate which methods to use 
 baseline = False
 linear_rg = False
@@ -19,8 +18,14 @@ QDA = False
 LDA = False
 logistic_reg = False
 decision_tr = False 
-kNN = False
+kNN = True
+with np.load("email_vector_training.npz") as trainingData:
+    X_training = trainingData["arr_0"]
+    y_training = trainingData["arr_1"]
 
+with np.load("email_vector_test.npz") as testData:
+    X_test = testData["arr_0"]
+    y_test = testData["arr_1"]
 def dimension_search(classifier, dr_method, X_training, y_training, X_test, y_test, min_k = 1, max_k = 600, interval = 5, save = False, name = None):
     # This function searches for the best number of dimensions k that yields the highest test accuracies.
     # Input: classifier - an instantiated classifier that has method train() and predict()
@@ -61,6 +66,26 @@ def dimension_search(classifier, dr_method, X_training, y_training, X_test, y_te
         plt.show()
     return ks[np.argmax(np.array(test_accuracies))]
 
+def test_knn_hyperparameter():
+
+
+    training_accuracies = []
+    test_accuracies = []
+    ks = []
+    for i in range(1, 201):
+        knn_classifier = KNearestNeighbor()
+        knn_classifier.train(X_training, y_training)
+        pred_train = knn_classifier.predict(X_training, i).reshape(-1, 1)
+        pred_test = knn_classifier.predict(X_test, i).reshape(-1, 1)
+        training_accuracies.append(1 - np.sum(np.absolute(y_training - pred_train)/X_training.shape[0]))
+        test_accuracies.append(1 - np.sum(np.absolute(y_test - pred_test))/X_test.shape[0])
+        ks.append(i)
+    fig, axs = plt.subplots(1, 2)
+    axs[0].plot(ks, training_accuracies)
+    axs[1].plot(ks, test_accuracies)
+    fig.suptitle("Training Accuracy & Test Accuracy vs. Number of Neighbors")
+    plt.savefig("KNN_k.jpg")
+    plt.show()
 
 def main():
     # X is an n x d matrix, where n is the number of samples and d is the number of features.
@@ -76,7 +101,7 @@ def main():
 
     # Change these variables to select which dimensionality reduction method to use, 
     # and the number of dimension k to reduce to.
-    PCA_flag = True
+    PCA_flag = False
     CCA_flag = False
     Random_flag = False
     k = 31
@@ -167,11 +192,12 @@ def main():
     if kNN:
         print(">>>>>>>>>>>" + "K Nearest Neighbors" + ">>>>>>>>>>>")
         knn_classifier = KNearestNeighbor()
-        start_time = time.time()
         knn_classifier.train(X_training, y_training)
-        print("Finished training in ", (time.time() - start_time)/60.0, " minutes")
-        pred_train = knn_classifier.predict(X_training, 5)
-        print(pred_train)
+        pred_train = knn_classifier.predict(X_training, 5).reshape(-1, 1)
+        pred_test = knn_classifier.predict(X_test, 5).reshape(-1, 1)
+        print("Training error is " + str(np.linalg.norm(y_training - pred_train)**2/X_training.shape[0]))
+        print("Test Error is " + str(np.linalg.norm(y_test - pred_test)**2/X_test.shape[0]))
+        print("Test accuracy is " + str(1 - np.sum(np.absolute(y_test - pred_test))/X_test.shape[0]))
 def run_all_dimensionality_test():
     with np.load("email_vector_training.npz") as trainingData:
         X_training = trainingData["arr_0"]
@@ -180,7 +206,7 @@ def run_all_dimensionality_test():
     with np.load("email_vector_test.npz") as testData:
         X_test = testData["arr_0"]
         y_test = testData["arr_1"]
-    names = ["QDA"]
+    names = ["KNN"]
     for name in names:
         if name == "LS_SVM":
             classifier = LS_SVM()
@@ -192,6 +218,8 @@ def run_all_dimensionality_test():
             classifier = LDA_Classifier()
         elif name == "logistic_reg":
             classifier = logistic_regression_classifier()
+        elif name == "KNN":
+            classifier = KNearestNeighbor()
         print(name)
         for dr_method in ["PCA", "CCA", "Random"]:
             print(dr_method)
@@ -199,4 +227,5 @@ def run_all_dimensionality_test():
             print(dimension_search(classifier, dr_method, X_training, y_training, X_test, y_test, min_k = 1, max_k = 601, interval = 30, save = True, name = name))
 if __name__ == '__main__':
     run_all_dimensionality_test()
-    #main()
+    # main()
+    # test_knn_hyperparameter()
