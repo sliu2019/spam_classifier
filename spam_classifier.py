@@ -7,18 +7,22 @@ from lda import *
 from k_nearest_neighbor import *
 from baseline import *
 from util import * 
+from neural_network import *
+from boost import *
+from decision_tree import *
 import matplotlib.pyplot as plt
 # Change these variables to indicate which methods to use 
 baseline = False
 linear_rg = False
 naive_bay = False
-nn = False 
+nn = False
 svm = False
 QDA = False
 LDA = False
-logistic_reg = True
-decision_tr = False 
+logistic_reg = False
+decision_tr = False
 kNN = False
+boost = False
 
 def dimension_search(classifier, dr_method, X_training, y_training, X_test, y_test, min_k = 1, max_k = 600, interval = 5, save = False, name = None):
     # This function searches for the best number of dimensions k that yields the highest test accuracies.
@@ -92,6 +96,14 @@ def main():
         U = Random_Projector(X_training, k)
         X_training = X_training @ U 
         X_test = X_test @ U 
+
+    # regularization on data
+    add_noise = False
+    if add_noise:
+        rng = np.random.RandomState(2)
+        X_training += rng.uniform(size=X_training.shape)
+        X_test += rng.uniform(size=X_test.shape)
+
     if baseline:
         print(">>>>>>>>>>>" + "Baseline" + ">>>>>>>>>>>")
         baseline_classifier = Baseline_Classifier()
@@ -142,7 +154,29 @@ def main():
             print("Test Error is " + str(np.linalg.norm(y_test - pred_test)**2/X_test.shape[0]))
             print("Test accuracy is " + str(1 - np.sum(np.absolute(y_test - pred_test))/X_test.shape[0]))
     if nn:
-        pass
+        print(">>>>>>>>>>>" + "Neural Network" + ">>>>>>>>>>>")
+        y_training = y_training.ravel()
+
+        nn_classifier = NN_Classifier()
+        nn_classifier.train(X_training, y_training)
+        nn_classifier.plot(X_training, y_training, X_test, y_test)
+        pred_train = (nn_classifier.predict(X_training) > 0).astype(int).reshape(-1, 1)
+        print("Training error is " + str(np.linalg.norm(y_training - pred_train)**2/X_training.shape[0]))
+        pred_test = (nn_classifier.predict(X_test) > 0).astype(int).reshape(-1, 1)
+        print("Test Error is " + str(np.linalg.norm(y_test - pred_test)**2/X_test.shape[0]))
+        print("Test accuracy is " + str(1 - np.sum(np.absolute(y_test - pred_test))/X_test.shape[0]))
+
+    if boost:
+        print(">>>>>>>>>>>" + "Boost" + ">>>>>>>>>>>")
+        y_training = y_training.ravel()
+
+        boost_classifier = Boost_Classifier()
+        boost_classifier.train(X_training, y_training)
+        pred_train = boost_classifier.predict(X_training).reshape(-1, 1)
+        print("Training error is " + str(np.linalg.norm(y_training - pred_train)**2/X_training.shape[0]))
+        pred_test = boost_classifier.predict(X_test).reshape(-1, 1)
+        print("Test Error is " + str(np.linalg.norm(y_test - pred_test)**2/X_test.shape[0]))
+        print("Test accuracy is " + str(1 - np.sum(np.absolute(y_test - pred_test))/X_test.shape[0]))
     if svm:
         print(">>>>>>>>>>>" + "SVM" + ">>>>>>>>>>>")
         svm_classifier = SVM_Classifier(0.1)
@@ -162,13 +196,25 @@ def main():
         print("Test Error is " + str(np.linalg.norm(y_test - pred_test)**2/X_test.shape[0]))
         print("Test accuracy is " + str(1 - np.sum(np.absolute(y_test - pred_test))/X_test.shape[0]))
     if decision_tr:
-        pass
+        print(">>>>>>>>>>>" + "Neural Network" + ">>>>>>>>>>>")
+        y_training = y_training.ravel()
+
+        tree_classifier = Tree_Classifier()
+        tree_classifier.train(X_training, y_training)
+        tree_classifier.plot(X_training, y_training, X_test, y_test)
+        pred_train = (tree_classifier.predict(X_training) > 0).astype(int).reshape(-1, 1)
+        print("Training error is " + str(np.linalg.norm(y_training - pred_train)**2/X_training.shape[0]))
+        pred_test = (tree_classifier.predict(X_test) > 0).astype(int).reshape(-1, 1)
+        print("Test Error is " + str(np.linalg.norm(y_test - pred_test)**2/X_test.shape[0]))
+        print("Test accuracy is " + str(1 - np.sum(np.absolute(y_test - pred_test))/X_test.shape[0]))
     if kNN:
         print(">>>>>>>>>>>" + "K Nearest Neighbors" + ">>>>>>>>>>>")
         knn_classifier = KNearestNeighbor()
         knn_classifier.train(X_training, y_training)
         pred_train = knn_classifier.predict(X_training, 5)
         print(pred_train)
+
+
 def run_all_dimensionality_test():
     with np.load("email_vector_training.npz") as trainingData:
         X_training = trainingData["arr_0"]
@@ -194,5 +240,7 @@ def run_all_dimensionality_test():
             print(dr_method)
             print("Best k is:")
             print(dimension_search(classifier, dr_method, X_training, y_training, X_test, y_test, min_k = 1, max_k = 600, interval = 30, save = True, name = name))
+
 if __name__ == '__main__':
-    run_all_dimensionality_test()
+    #run_all_dimensionality_test()
+    main()

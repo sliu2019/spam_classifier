@@ -1,32 +1,36 @@
 import matplotlib.pyplot as plt
-from sklearn.neural_network import MLPClassifier
+from sklearn.ensemble import AdaBoostClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
 
-def train(X,y):
+class Boost_Classifier():
 
-	# replaced by our dataset
-	
-	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+	trained = False
 
-	scaler = StandardScaler()  
-	scaler.fit(X_train)  
-	X_train = scaler.transform(X_train)  
-	X_test = scaler.transform(X_test)
+	def __init__(self, base_estimator_in = DecisionTreeClassifier(max_depth=2), 
+						n_estimators_in = 600, 
+						learning_rate_in = 1):
+		
+		self.boost_predictor = AdaBoostClassifier(base_estimator = base_estimator_in, 
+												n_estimators = n_estimators_in,
+												learning_rate = learning_rate_in)
 
-	bdt = AdaBoostClassifier(DecisionTreeClassifier(max_depth=2), n_estimators=600, learning_rate=1)
+	def train(self, X_train, y_train):
+		self.scaler = StandardScaler()  
+		self.scaler.fit(X_train)  
+		X_train = self.scaler.transform(X_train)  
 
-	bdt.fit(X_train, y_train)
-	train_err = bdt.score(X_train, y_train)
-	test_err = bdt.score(X_test, y_test)
-	print("Training set score: %f" % train_err)
-	print("Test set score: %f" % test_err)
+		self.boost_predictor.fit(X_train, y_train)
 
-	return (train_err, test_err)
+		self.trained = True
+
+		# return train accuracy
+		return self.boost_predictor.score(X_train, y_train)
 
 
-X, y = make_classification(n_features=20, n_redundant=3, n_informative=2,
-							random_state=1, n_clusters_per_class=1)
-
-train(X,y)
+	def predict(self, X_test):
+		assert self.trained,"You should call train first."
+		X_test = self.scaler.transform(X_test)
+		return self.boost_predictor.predict(X_test)
