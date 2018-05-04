@@ -8,15 +8,16 @@ from k_nearest_neighbor import *
 from baseline import *
 from util import * 
 import matplotlib.pyplot as plt
+import time
 # Change these variables to indicate which methods to use 
 baseline = False
 linear_rg = False
 naive_bay = False
 nn = False 
-svm = True
-QDA = True
-LDA = True
-logistic_reg = True
+svm = False
+QDA = False
+LDA = False
+logistic_reg = False
 decision_tr = False 
 kNN = False
 
@@ -166,7 +167,9 @@ def main():
     if kNN:
         print(">>>>>>>>>>>" + "K Nearest Neighbors" + ">>>>>>>>>>>")
         knn_classifier = KNearestNeighbor()
+        start_time = time.time()
         knn_classifier.train(X_training, y_training)
+        print("Finished training in ", (time.time() - start_time)/60.0, " minutes")
         pred_train = knn_classifier.predict(X_training, 5)
         print(pred_train)
 def run_all_dimensionality_test():
@@ -196,4 +199,4 @@ def run_all_dimensionality_test():
             print(dimension_search(classifier, dr_method, X_training, y_training, X_test, y_test, min_k = 1, max_k = 601, interval = 30, save = True, name = name))
 if __name__ == '__main__':
     run_all_dimensionality_test()
-    # main()
+    #main()
