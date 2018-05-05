@@ -43,11 +43,8 @@ def extract_features(path):
             # print(email_content)
 
             content_tknzd = tknzr.tokenize(email_content)
-            subject_tknzd = tknzr.tokenize(email_subject)
 
-            content_depunct = list(filter(lambda token: token not in string.punctuation, content_tknzd))
-
-            # De-punkt, stopwords removed, alphabetical words only
+            # Removed stop words
             content_cleaned = [token for token in content_tknzd if not token in stop_words]
             # content_cleaned = [token for token in content_cleaned if token.isalpha()]
 

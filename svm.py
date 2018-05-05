@@ -9,4 +9,4 @@ class SVM_Classifier():
 		self.svm_predictor.fit(X, y)
 
 	def predict(self, X):
-		return self.svm_predictor.predict(X)
+		return (self.svm_predictor.predict(X) > 0).astype(int).reshape(-1, 1)

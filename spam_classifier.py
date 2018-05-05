@@ -6,18 +6,20 @@ from qda import *
 from lda import *
 from k_nearest_neighbor import *
 from baseline import *
-from util import * 
+from util import *
+from nureral_network import *
+from decision_tree import *
 import matplotlib.pyplot as plt
 # Change these variables to indicate which methods to use 
-baseline = False
-linear_rg = False
-naive_bay = False
-nn = False 
-svm = False
-QDA = False
-LDA = False
-logistic_reg = False
-decision_tr = False 
+baseline = True
+linear_rg = True
+naive_bay = True
+nn = True
+svm = True
+QDA = True
+LDA = True
+logistic_reg = True
+decision_tr = True
 kNN = True
 with np.load("email_vector_training.npz") as trainingData:
     X_training = trainingData["arr_0"]
@@ -26,6 +28,61 @@ with np.load("email_vector_training.npz") as trainingData:
 with np.load("email_vector_test.npz") as testData:
     X_test = testData["arr_0"]
     y_test = testData["arr_1"]
+def search_C(c_min = 0.0001, c_max = 1000, ratio = 10):
+    cs = []
+    training_accuracies = []
+    test_accuracies = []
+    C = c_min
+    while C <= c_max:
+        cs.append(C)
+        classifier = SVM_Classifier(C)
+        classifier.train(X_training, y_training)
+        pred_train = classifier.predict(X_training).reshape(-1, 1)
+        pred_test = classifier.predict(X_test).reshape(-1, 1)
+        training_accuracies.append(1 - np.sum(np.absolute(y_training - pred_train)) / X_training.shape[0])
+        test_accuracies.append(1 - np.sum(np.absolute(y_test - pred_test)) / X_test.shape[0])
+        C = C * ratio
+    fig, axs = plt.subplots(1, 2)
+    axs[0].semilogx(cs, training_accuracies)
+    axs[1].semilogx(cs, test_accuracies)
+    fig.suptitle("Training Accuracy & Validation Accuracy vs. C")
+    plt.savefig("SVM_C.png")
+    print(cs[np.argmax(np.array(test_accuracies))])
+def search_lambda(dr_method = "", k = 1, lam_min = 0.001, lam_max = 20000, ratio = 2):
+    if dr_method != "":
+        if dr_method == "PCA":
+            Projector = PCA_Projector
+        elif dr_method == "CCA":
+            Projector = CCA_Projector
+        elif dr_method == "Random":
+            Projector = Random_Projector
+        else:
+            raise ValueError("Unspecified Projector")
+        U = Projector(X_training, y_training, k)
+        X_training_hat = X_training @ U
+        X_test_hat = X_test @ U
+    else:
+        X_test_hat = X_test
+        X_training_hat = X_training
+    lambdas = []
+    training_accuracies = []
+    test_accuracies = []
+    lambd = lam_min
+    while lambd <= lam_max:
+        lambdas.append(lambd)
+        classifier = LS_SVM()
+        classifier.train(X_training_hat, y_training, lambd = lambd)
+        pred_train = classifier.predict(X_training_hat).reshape(-1, 1)
+        pred_test = classifier.predict(X_test_hat).reshape(-1, 1)
+        training_accuracies.append(1 - np.sum(np.absolute(y_training - pred_train)) / X_training.shape[0])
+        test_accuracies.append(1 - np.sum(np.absolute(y_test - pred_test)) / X_test.shape[0])
+        lambd = lambd * ratio
+    fig, axs = plt.subplots(1, 2)
+    axs[0].plot(lambdas, training_accuracies)
+    axs[1].plot(lambdas, test_accuracies)
+    fig.suptitle("Training Accuracy & Validation Accuracy vs. Ridge Regularization Weight")
+    plt.savefig("LS_SVM_lambda.png")
+    print(lambdas[np.argmax(np.array(test_accuracies))])
 def dimension_search(classifier, dr_method, X_training, y_training, X_test, y_test, min_k = 1, max_k = 600, interval = 5, save = False, name = None):
     # This function searches for the best number of dimensions k that yields the highest test accuracies.
     # Input: classifier - an instantiated classifier that has method train() and predict()
@@ -58,14 +115,14 @@ def dimension_search(classifier, dr_method, X_training, y_training, X_test, y_te
     fig, axs = plt.subplots(1, 2)
     axs[0].plot(ks, training_accuracies)
     axs[1].plot(ks, test_accuracies)
-    fig.suptitle("Training Accuracy & Test Accuracy vs. k")
+    fig.suptitle("Training Accuracy & Validation Accuracy vs. k, Projected using " + dr_method)
     if save:
         if name:
-            plt.savefig(name + "_" + dr_method + ".jpg")
+            plt.savefig(name + "_" + dr_method + ".png")
     else:
         plt.show()
     return ks[np.argmax(np.array(test_accuracies))]
-
+1
 def test_knn_hyperparameter():
 
 
@@ -168,14 +225,22 @@ def main():
             print("Test Error is " + str(np.linalg.norm(y_test - pred_test)**2/X_test.shape[0]))
             print("Test accuracy is " + str(1 - np.sum(np.absolute(y_test - pred_test))/X_test.shape[0]))
     if nn:
-        pass
+        print(">>>>>>>>>>>" + "Neural Network" + ">>>>>>>>>>>")
+        nn_classifier = NN_Classifier()
+        nn_classifier.train(X_training, y_training)
+        pred_train = nn_classifier.predict(X_training).reshape(-1, 1)
+        print("Training error is " + str(np.linalg.norm(y_training - pred_train) ** 2 / X_training.shape[0]))
+        pred_test = nn_classifier.predict(X_test).reshape(-1, 1)
+        print("Test Error is " + str(np.linalg.norm(y_test - pred_test) ** 2 / X_test.shape[0]))
+        print("Test accuracy is " + str(1 - np.sum(np.absolute(y_test - pred_test)) / X_test.shape[0]))
+
     if svm:
         print(">>>>>>>>>>>" + "SVM" + ">>>>>>>>>>>")
         svm_classifier = SVM_Classifier(0.1)
         svm_classifier.train(X_training, y_training)
-        pred_train = (svm_classifier.predict(X_training) > 0).astype(int).reshape(-1, 1)
+        pred_train = svm_classifier.predict(X_training)
         print("Training error is " + str(np.linalg.norm(y_training - pred_train)**2/X_training.shape[0]))
-        pred_test = (svm_classifier.predict(X_test) > 0).astype(int).reshape(-1, 1)
+        pred_test = svm_classifier.predict(X_test)
         print("Test Error is " + str(np.linalg.norm(y_test - pred_test)**2/X_test.shape[0]))
         print("Test accuracy is " + str(1 - np.sum(np.absolute(y_test - pred_test))/X_test.shape[0]))
     if logistic_reg:
@@ -188,7 +253,16 @@ def main():
         print("Test Error is " + str(np.linalg.norm(y_test - pred_test)**2/X_test.shape[0]))
         print("Test accuracy is " + str(1 - np.sum(np.absolute(y_test - pred_test))/X_test.shape[0]))
     if decision_tr:
-        pass
+        print(">>>>>>>>>>>" + "Decision Tree" + ">>>>>>>>>>>")
+        y_training = y_training.ravel()
+        tree_classifier = Tree_Classifier()
+        tree_classifier.train(X_training, y_training)
+        tree_classifier.plot(X_training, y_training, X_test, y_test)
+        pred_train = (tree_classifier.predict(X_training) > 0).astype(int).reshape(-1, 1)
+        print("Training error is " + str(np.linalg.norm(y_training - pred_train)**2/X_training.shape[0]))
+        pred_test = (tree_classifier.predict(X_test) > 0).astype(int).reshape(-1, 1)
+        print("Test Error is " + str(np.linalg.norm(y_test - pred_test)**2/X_test.shape[0]))
+        print("Test accuracy is " + str(1 - np.sum(np.absolute(y_test - pred_test))/X_test.shape[0]))
     if kNN:
         print(">>>>>>>>>>>" + "K Nearest Neighbors" + ">>>>>>>>>>>")
         knn_classifier = KNearestNeighbor()
@@ -206,7 +280,7 @@ def run_all_dimensionality_test():
     with np.load("email_vector_test.npz") as testData:
         X_test = testData["arr_0"]
         y_test = testData["arr_1"]
-    names = ["KNN"]
+    names = ["QDA", "LDA", "KNN", "logistic_reg", "decision_tree"]
     for name in names:
         if name == "LS_SVM":
             classifier = LS_SVM()
@@ -220,12 +294,24 @@ def run_all_dimensionality_test():
             classifier = logistic_regression_classifier()
         elif name == "KNN":
             classifier = KNearestNeighbor()
+        elif name == "nn":
+            classifier = NN_Classifier()
+        elif name == "decision_tree":
+            classifier = Tree_Classifier()
+        else:
+            raise ValueError("Unspecified Classifier")
         print(name)
         for dr_method in ["PCA", "CCA", "Random"]:
             print(dr_method)
             print("Best k is:")
-            print(dimension_search(classifier, dr_method, X_training, y_training, X_test, y_test, min_k = 1, max_k = 601, interval = 30, save = True, name = name))
+            try:
+                print(dimension_search(classifier, dr_method, X_training, y_training, X_test, y_test, min_k = 1, max_k = 601, interval = 30, save = True, name = name))
+            except ValueError:
+                pass
+
 if __name__ == '__main__':
-    run_all_dimensionality_test()
-    # main()
+    # run_all_dimensionality_test()
+    main()
     # test_knn_hyperparameter()
+    # search_lambda("PCA", 181)
+    # search_C()

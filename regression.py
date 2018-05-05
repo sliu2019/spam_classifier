@@ -1,11 +1,12 @@
 import numpy as np
 from sklearn import linear_model
-def linear_regression(X, y):
+def linear_regression(X, y, lambd = 0.001):
     y = 2 * y - 1
-    return np.linalg.solve(X.T@X + 0.001 * np.identity(X.shape[1]), X.T@y)
+    return np.linalg.solve(X.T@X + lambd * np.identity(X.shape[1]), X.T@y)
+
 class LS_SVM:
-    def train(self, X_training, y_trainig):
-        self.w = linear_regression(X_training, y_trainig)
+    def train(self, X_training, y_trainig, lambd = 0.001):
+        self.w = linear_regression(X_training, y_trainig, lambd)
 
     def predict(self, X_test):
         pred_test = X_test @ self.w
